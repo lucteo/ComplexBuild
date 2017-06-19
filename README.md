@@ -38,10 +38,12 @@ For this project, we frequently modify the following parameters:
 * run arguments (to be passed when executing the resulting executable)
 
 At the end of this exercise, we expect the build menu (Cmd+Shift+B or Ctrl+Shift+B) to show something like:
-TODO
+
+![Build menu](https://github.com/lucteo/s-images/blob/master/build_menu.png)
 
 Selecting "Change Options" should show something like:
-TODO
+
+![Options menu](https://github.com/lucteo/s-images/blob/master/options_menu.png)
 
 The user can change these options; for some of them (i.e., mode, target) the user needs to chose from a set of fix values, and for others, the user can enter the corresponding textual values.
 
