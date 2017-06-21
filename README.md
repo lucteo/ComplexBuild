@@ -139,7 +139,7 @@ All the values that the user will set through the _Change Options_ menu will be 
     {
         "build_args": "-j4",
         "configure_args": "-G \"Unix Makefiles\"",
-        "target": "mytest"
+        "target": "mytest",
         "executable": "./mytest",
         "mode": "Release",
         "run_args": ""
