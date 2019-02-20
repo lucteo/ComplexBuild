@@ -39,11 +39,11 @@ For this project, we frequently modify the following parameters:
 
 At the end of this exercise, we expect the build menu (Cmd+Shift+B or Ctrl+Shift+B) to show something like:
 
-![Build menu](https://github.com/lucteo/s-images/blob/master/build_menu.png)
+![Build menu](https://github.com/lucteo/s-images/raw/master/build_menu.png)
 
 Selecting "Change Options" should show something like:
 
-![Options menu](https://github.com/lucteo/s-images/blob/master/options_menu.png)
+![Options menu](https://github.com/lucteo/s-images/raw/master/options_menu.png)
 
 The user can change these options; for some of them (i.e., mode, target) the user needs to chose from a set of fix values, and for others, the user can enter the corresponding textual values.
 
@@ -128,28 +128,6 @@ Here the user defines variables/values that are used directly by the build syste
 
 We define the actual commands to be executed for each build action, along with the directories to be used for building and for running the application (in our case it's just the project path)
 
-### Project settings
-
-All the values that the user will set through the _Change Options_ menu will be stored as project settings. For our project, one possible configuration would be:
-
-```json
-"settings":
-{
-    "ComplexBuild":
-    {
-        "build_args": "-j4",
-        "configure_args": "-G \"Unix Makefiles\"",
-        "target": "mytest",
-        "executable": "./mytest",
-        "mode": "Release",
-        "run_args": ""
-    }
-}
-```
-
-The values present here will override any value set in the `ComplexBuild_values` section.
-
-
 ### The `ComplexBuild_options` section
 
 In this section we define the menu presented to the user to easily select between different build configurations. For our example, we can have:
@@ -231,9 +209,174 @@ There are two types of options we can configure: _choices_, for which the user w
 For the `edit_value` types of options, we need to provide a variable name in which the text introduced by the user will be placed. Chocices can allow a more advanced changing of the values; for each choice that the user can have, we can set one or more variables in a `set` list. For example, we may enable/disable different build options, stored in different variables, when we switch between debug and release builds.
 
 
+### Saved options
+
+All the values that the user will set through the _Change Options_ menu will be stored as project settings (part of the .sublime-project file). For our project, one possible configuration would be:
+
+```json
+"settings":
+{
+    "ComplexBuild":
+    {
+        "build_args": "-j4",
+        "configure_args": "-G \"Unix Makefiles\"",
+        "target": "mytest",
+        "executable": "./mytest",
+        "mode": "Release",
+        "run_args": ""
+    }
+}
+```
+
+These will be overwritten whenever the user changes the settings from the _Change Options_ menu.
+The values present here will override any value set in the `ComplexBuild_values` section.
+
+
 ---
 
 With these simple configurations, one can build more and more complex build system. We can have a lot of variables that can be easily configured from an options menu, and applied as arguments to the actual build commands.
+
+<details>
+<summary><b>Complete .sublime-project file (click to expand)</b></summary>
+
+```json
+{
+    "ComplexBuild_options":
+    [
+        {
+            "name": "Set mode",
+            "show": "${mode}",
+            "choices":
+            [
+                {
+                    "name": "Debug",
+                    "set":
+                    {
+                        "mode": "Debug"
+                    }
+                },
+                {
+                    "name": "RelDev",
+                    "set":
+                    {
+                        "mode": "RelDev"
+                    }
+                },
+                {
+                    "name": "Release",
+                    "set":
+                    {
+                        "mode": "Release"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Set target",
+            "show": "${executable}",
+            "choices":
+            [
+                {
+                    "name": "testability",
+                    "set":
+                    {
+                        "target": "mytest",
+                        "executable": "./mytest"
+                    }
+                },
+                {
+                    "name": "perf_test",
+                    "set":
+                    {
+                        "target": "perfTest",
+                        "executable": "./perfTest"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Set configure args",
+            "show": "${configure_args}",
+            "edit_value": "configure_args"
+        },
+        {
+            "name": "Set build args",
+            "show": "${build_args}",
+            "edit_value": "build_args"
+        },
+        {
+            "name": "Set run args",
+            "show": "${run_args}",
+            "edit_value": "run_args"
+        }
+    ],
+    "ComplexBuild_values":
+    {
+        "builddir": "${project_path}",
+        "rundir": "${project_path}",
+        "cmdconfigure": "/usr/local/bin/cmake ${configure_args} -DCMAKE_BUILD_TYPE=${mode}",
+        "cmdbuild": "make ${build_args} ${target}",
+        "cmdclean": "make clean",
+        "cmdrun": "${executable} ${run_args}"
+    },
+    "build_systems":
+    [
+        {
+            "name": "Testability build",
+            "target": "complex_build_exec",
+            "target_cmd": "${cmdbuild}",
+            "target_dir": "${builddir}",
+            "variants":
+            [
+                {
+                    "name": "Change Options",
+                    "target": "complex_build_options"
+                },
+                {
+                    "name": "Configure",
+                    "target": "complex_build_exec",
+                    "target_cmd": "${cmdconfigure}"
+                },
+                {
+                    "name": "Clean",
+                    "target": "complex_build_exec",
+                    "target_cmd": "${cmdclean}"
+                },
+                {
+                    "name": "Run",
+                    "target": "complex_build_exec",
+                    "target_cmd": "${cmdrun}",
+                    "target_dir": "${rundir}"
+                },
+                {
+                    "name": "Print build variables",
+                    "target": "complex_build_print_vars"
+                }
+            ]
+        }
+    ],
+    "folders":
+    [
+        {
+            "path": "."
+        },
+    ],
+    "settings":
+    {
+        "ComplexBuild":
+        {
+            "build_args": "-j4",
+            "configure_args": "-G \"Unix Makefiles\"",
+            "target": "mytest",
+            "executable": "./mytest",
+            "mode": "Release",
+            "run_args": ""
+        }
+    }
+}
+```
+
+</details>
 
 
 Useful shortcuts
@@ -242,6 +385,7 @@ Useful shortcuts
 These build customization can be even more useful with the right keyboard shortcuts, to ease accessing the build features.
 
 We recommend the following additional key configurations to be added to the key bindings:
+
 ```json
 { "keys": ["f5"], "command": "build", "args": { "variant": "Run"} },
 { "keys": ["alt+f7"], "command": "complex_build_options"},
@@ -253,7 +397,7 @@ With these additions, then the following shortcuts can be used to interact with 
 Key shortcut | Meaning
 ------------ | -------
 Cmd+Shift+B (or Ctrl+Shift+B) | shows the build menu; typically used to select _Configure_, _Clean_ or the main build command
-F7 or Cmd+B (or Ctrl+b) | runs the last build command selected
+F7 or Cmd+B (or Ctrl+B) | runs the last build command selected
 Alt+F7 | allows easy change of the build options
 F5 | run the selected program
 Alt+B | shows the last console output
