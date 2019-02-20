@@ -21,8 +21,6 @@ class ComplexBuildExecCommand(sublime_plugin.WindowCommand):
         cmd = settings.expand(kwds['target_cmd']);
         working_dir = settings.expand(kwds['target_dir']);
 
-        print("ComplexBuildExecCommand: '%s'" % cmd)
-
         # Make sure to echo our command first
         print(cmd)
         cmd = 'ECHO Running \"%s\" && %s' % (cmd, cmd)
@@ -90,9 +88,33 @@ class ComplexBuildOptionsCommand(sublime_plugin.WindowCommand):
         if index >= 0:
             cur_choice = self._cur_option["choices"][index]
             values_to_set = cur_choice["set"]
+
+            # Sublime's Window.project_data()/set_project_data() doesn't like being called
+            # multiple times within a single command.
+            # See the following:
+            #    https://forum.sublimetext.com/t/window-project-data-sometimes-returns-int-or-str-instead-of-dict/28595
+            #
+            # Update all settings here, then set the project data once.
+            projData = self.window.project_data()
+            # Read the project data
+            if not 'settings' in projData:
+                projData['settings'] = {}
+            projSettings = projData['settings']
+            if not 'ComplexBuild' in projSettings:
+                projSettings['ComplexBuild'] = {}
+            complexBuildProjSettings = projSettings['ComplexBuild']
+
             # Set all the values associated with a choice
             for key in values_to_set:
-                self._settings.set_value(key, values_to_set[key])
+                # Do the change
+                complexBuildProjSettings[key] = values_to_set[key]
+
+                # Also set our user-values
+                self._settings._values[key] = values_to_set[key]
+
+            # Save back the project data
+            self.window.set_project_data(projData)
+
         self._cur_option = None
 
     def _on_input_command_done(self, text):
